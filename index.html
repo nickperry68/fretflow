@@ -124,8 +124,19 @@
 
                 const data = await response.json();
 
-                if (data.result) {
-                    resultsDiv.innerText = data.result;
+                if (data.progression && Array.isArray(data.progression)) {
+                    let outputText = "🎸 FretFlow Hybrid Voicings Report\n" + "=".repeat(35) + "\n\n";
+                    
+                    data.progression.forEach(item => {
+                        outputText += `Chord: ${item.chord}\n`;
+                        item.variations.forEach(v => {
+                            let fretsStr = JSON.stringify(v.frets).replace(/"/g, '').replace(/,/g, ', ');
+                            outputText += `  - ${v.name}: ${fretsStr}\n`;
+                        });
+                        outputText += "\n";
+                    });
+
+                    resultsDiv.innerText = outputText;
                 } else if (data.error) {
                     resultsDiv.innerText = "Error: " + data.error;
                 } else {

@@ -132,7 +132,6 @@
                     data.progression.forEach(item => {
                         outputText += `Chord: ${item.chord}\n`;
                         item.variations.forEach(v => {
-                            // Formatting the fret numbers neatly into a string
                             let fretsStr = JSON.stringify(v.frets).replace(/"/g, '').replace(/,/g, ', ');
                             outputText += `  - ${v.name}: ${fretsStr}\n`;
                         });
@@ -140,13 +139,12 @@
                     });
 
                     resultsDiv.innerText = outputText;
-                } else if (data.error) {
-                    resultsDiv.innerText = "Error: " + data.error;
                 } else {
-                    resultsDiv.innerText = "Unexpected response from server.";
+                    // Show the exact raw data back so we can see what the server sent
+                    resultsDiv.innerText = "Server response: " + JSON.stringify(data, null, 2);
                 }
             } catch (err) {
-                resultsDiv.innerText = "Connection error. Please check your network.";
+                resultsDiv.innerText = "Connection error: " + err.message;
             }
         }
     </script>

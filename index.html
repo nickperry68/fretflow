@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Ensures proper scaling on mobile screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Sets title bar color on mobile browsers -->
     <meta name="theme-color" content="#2b6cb0">
     <title>FretFlow</title>
     <style>
@@ -23,7 +21,7 @@
         input, select, button { 
             width: 100%; 
             padding: 12px; 
-            font-size: 16px; /* Prevents auto-zoom on iPhone input focus */
+            font-size: 16px; 
             border: 1px solid #cbd5e0;
             border-radius: 8px;
             background-color: #ffffff;
@@ -48,7 +46,7 @@
             white-space: pre-wrap; 
             font-family: "Courier New", Courier, monospace; 
             font-size: 14px;
-            overflow-x: auto; /* Adds horizontal scrolling if ASCII tab is wide */
+            overflow-x: auto; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
     </style>
@@ -139,115 +137,4 @@
         }
     </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FretFlow - Up-the-Neck Picking Guide</title>
-    <style>
-        body { font-family: sans-serif; max-width: 650px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input, select, button { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; }
-        button { background-color: #2b6cb0; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 10px;}
-        button:hover { background-color: #2c5282; }
-        #results { margin-top: 30px; background: #f7fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
-    </style>
-</head>
-<body>
-
-    <h1>🎸 FretFlow</h1>
-    <p>Smart up-the-neck guitar voicings and custom picking patterns.</p>
-
-    <div class="form-group">
-        <label for="chords">Chord Progression</label>
-        <input type="text" id="chords" placeholder="e.g. D - G - Em - A or C - G - D - A" value="D - G - Em - A">
-    </div>
-
-    <div class="form-group">
-        <label for="tuning">Tuning</label>
-        <select id="tuning">
-            <option value="Standard (EADGBE)">Standard (EADGBE)</option>
-            <option value="Drop D (DADGBE)" selected>Drop D (DADGBE)</option>
-            <option value="Open G (DGDGBD)">Open G (DGDGBD) - 'Keith Richards'</option>
-            <option value="DADGAD">DADGAD</option>
-            <option value="Double Drop D (DADGBD)">Double Drop D (DADGBD)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="capo">Capo Position</label>
-        <select id="capo">
-            <option value="None">No Capo</option>
-            <option value="1st Fret">1st Fret</option>
-            <option value="2nd Fret">2nd Fret</option>
-            <option value="3rd Fret">3rd Fret</option>
-            <option value="4th Fret">4th Fret</option>
-            <option value="5th Fret">5th Fret</option>
-            <option value="7th Fret">7th Fret</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="style">Picking Style</label>
-        <select id="style">
-            <option value="Travis Fingerpicking">Travis Fingerpicking</option>
-            <option value="Mellow 6/8 Arpeggio">Mellow 6/8 Arpeggio</option>
-            <option value="Up-the-Neck Movable Triads" selected>Up-the-Neck Movable Triads / Voice Leading</option>
-            <option value="Acoustic Strum & Fill">Acoustic Strum & Fill</option>
-        </select>
-    </div>
-
-    <button onclick="generateArrangement()">Generate Arrangement</button>
-
-    <div id="results">Your custom tab and up-the-neck voicings will appear here...</div>
-
-    <script>
-        async function generateArrangement() {
-            const chords = document.getElementById('chords').value;
-            const tuning = document.getElementById('tuning').value;
-            const capo = document.getElementById('capo').value;
-            const style = document.getElementById('style').value;
-            const resultsDiv = document.getElementById('results');
-
-            if (!chords) {
-                alert('Please enter a chord progression!');
-                return;
-            }
-
-            resultsDiv.innerText = "Connecting to FretFlow Railway server and generating arrangement...";
-
-            const railwayUrl = 'https://web-production-37f6f1.up.railway.app/generate';
-
-            try {
-                const response = await fetch(railwayUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        chords: chords,
-                        tuning: tuning,
-                        capo: capo,
-                        style: style
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.result) {
-                    resultsDiv.innerText = data.result;
-                } else if (data.error) {
-                    resultsDiv.innerText = "Server Error:\n" + data.error;
-                } else {
-                    resultsDiv.innerText = "Unexpected Response:\n" + JSON.stringify(data, null, 2);
-                }
-            } catch (err) {
-                resultsDiv.innerText = "Connection Error:\n" + err.message;
-            }
-        }
-    </script>
-</body>
 </html>
- 

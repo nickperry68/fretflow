@@ -67,11 +67,10 @@
     <div class="form-group">
         <label for="tuning">Tuning</label>
         <select id="tuning">
-            <option value="Standard (EADGBE)">Standard (EADGBE)</option>
-            <option value="Drop D (DADGBE)" selected>Drop D (DADGBE)</option>
-            <option value="Open G (DGDGBD)">Open G (DGDGBD)</option>
-            <option value="DADGAD">DADGAD</option>
-            <option value="Double Drop D (DADGBD)">Double Drop D (DADGBD)</option>
+            <option value="standard">Standard (EADGBE)</option>
+            <option value="drop_d" selected>Drop D (DADGBE)</option>
+            <option value="open_g">Open G (DGDGBD)</option>
+            <option value="dadgad">DADGAD</option>
         </select>
     </div>
 
@@ -127,8 +126,20 @@
 
                 const data = await response.json();
 
-                if (data.result) {
-                    resultsDiv.innerText = data.result;
+                if (data.progression && Array.isArray(data.progression)) {
+                    let outputText = "🎸 FretFlow Hybrid Voicings Report\n" + "=".repeat(35) + "\n\n";
+                    
+                    data.progression.forEach(item => {
+                        outputText += `Chord: ${item.chord}\n`;
+                        item.variations.forEach(v => {
+                            // Formatting the fret numbers neatly into a string
+                            let fretsStr = JSON.stringify(v.frets).replace(/"/g, '').replace(/,/g, ', ');
+                            outputText += `  - ${v.name}: ${fretsStr}\n`;
+                        });
+                        outputText += "\n";
+                    });
+
+                    resultsDiv.innerText = outputText;
                 } else if (data.error) {
                     resultsDiv.innerText = "Error: " + data.error;
                 } else {

@@ -11,7 +11,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             max-width: 500px; 
             margin: 0 auto; 
-            padding: 20px 15px; 
+            padding: 20px 15px 40px 15px; 
             background-color: #f8fafc;
             color: #2d3748;
         }
@@ -93,4 +93,51 @@
             <option value="Travis Fingerpicking" selected>Travis Fingerpicking</option>
             <option value="Mellow 6/8 Arpeggio">Mellow 6/8 Arpeggio</option>
             <option value="Up-the-Neck Movable Triads">Up-the-Neck Movable Triads</option>
-            <option value="Acoustic Strum & Fill">Acoustic
+            <option value="Acoustic Strum & Fill">Acoustic Strum & Fill</option>
+        </select>
+    </div>
+
+    <button onclick="generateArrangement()">Generate Arrangement</button>
+
+    <div id="results">Your custom tab and up-the-neck voicings will appear here...</div>
+
+    <script>
+        async function generateArrangement() {
+            const chords = document.getElementById('chords').value;
+            const tuning = document.getElementById('tuning').value;
+            const capo = document.getElementById('capo').value;
+            const style = document.getElementById('style').value;
+            const resultsDiv = document.getElementById('results');
+
+            if (!chords) {
+                alert('Please enter a chord progression!');
+                return;
+            }
+
+            resultsDiv.innerText = "Generating custom arrangement...";
+
+            const railwayUrl = 'https://web-production-37f6f1.up.railway.app/generate';
+
+            try {
+                const response = await fetch(railwayUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chords, tuning, capo, style })
+                });
+
+                const data = await response.json();
+
+                if (data.result) {
+                    resultsDiv.innerText = data.result;
+                } else if (data.error) {
+                    resultsDiv.innerText = "Error: " + data.error;
+                } else {
+                    resultsDiv.innerText = "Unexpected response from server.";
+                }
+            } catch (err) {
+                resultsDiv.innerText = "Connection error. Please check your network.";
+            }
+        }
+    </script>
+</body>
+</html>

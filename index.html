@@ -45,7 +45,8 @@
             border-radius: 8px; 
             white-space: pre-wrap; 
             font-family: "Courier New", Courier, monospace; 
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1.5;
             overflow-x: auto; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
@@ -125,13 +126,14 @@
                 const data = await response.json();
 
                 if (data.progression && Array.isArray(data.progression)) {
-                    let outputText = "🎸 FretFlow Hybrid Voicings Report\n" + "=".repeat(35) + "\n\n";
+                    let outputText = `🎸 FretFlow Arrangement Report\nTuning: ${tuning} | Style: ${style}\n` + "=".repeat(45) + "\n\n";
                     
                     data.progression.forEach(item => {
                         outputText += `Chord: ${item.chord}\n`;
                         item.variations.forEach(v => {
                             let fretsStr = JSON.stringify(v.frets).replace(/"/g, '').replace(/,/g, ', ');
-                            outputText += `  - ${v.name}: ${fretsStr}\n`;
+                            outputText += `  - ${v.name}: [${fretsStr}]\n`;
+                            outputText += `    Pattern: ${v.pattern}\n`;
                         });
                         outputText += "\n";
                     });

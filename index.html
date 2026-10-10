@@ -1,112 +1,140 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import os
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2b6cb0">
+    <title>FretFlow</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 20px 15px; 
+            background-color: #f8fafc;
+            color: #2d3748;
+        }
+        h1 { margin-top: 5px; font-size: 26px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #4a5568; }
+        input, select, button { 
+            width: 100%; 
+            padding: 12px; 
+            font-size: 16px; 
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+        button { 
+            background-color: #2b6cb0; 
+            color: white; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:active { background-color: #2c5282; transform: scale(0.98); }
+        #results { 
+            margin-top: 25px; 
+            background: #ffffff; 
+            padding: 16px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            white-space: pre-wrap; 
+            font-family: "Courier New", Courier, monospace; 
+            font-size: 14px;
+            overflow-x: auto; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
 
-app = Flask(__name__)
-CORS(app)
+    <h1>🎸 FretFlow</h1>
+    <p style="font-size: 14px; color: #718096; margin-top: -10px;">Up-the-neck voicings & picking guide</p>
 
-# Tried-and-tested chord shapes relative to their base root string (Root-6 is based on E, Root-5 on A)
-CHORD_TEMPLATES = {
-    "maj": [
-        {"name": "Root-6 Barre (E-Shape)", "base_root": "E", "frets": [0, 2, 2, 1, 0, 0], "span": 3},
-        {"name": "Root-5 Barre (A-Shape)", "base_root": "A", "frets": ["x", 0, 2, 2, 2, 0], "span": 3},
-        {"name": "Interior Triad (D-G-B strings)", "base_root": "D", "frets": ["x", "x", 0, 2, 3, 2], "span": 3},
-    ],
-    "min": [
-        {"name": "Root-6 Minor (Em-Shape)", "base_root": "E", "frets": [0, 2, 2, 0, 0, 0], "span": 2},
-        {"name": "Root-5 Minor (Am-Shape)", "base_root": "A", "frets": ["x", 0, 2, 2, 1, 0], "span": 2},
-    ],
-    "7": [
-        {"name": "Root-6 Dominant 7", "base_root": "E", "frets": [0, 2, 0, 1, 0, 0], "span": 2},
-        {"name": "Root-5 Dominant 7", "base_root": "A", "frets": ["x", 0, 2, 0, 2, 0], "span": 2},
-    ],
-    "m7": [
-        {"name": "Root-6 Minor 7", "base_root": "E", "frets": [0, 2, 0, 0, 0, 0], "span": 2},
-        {"name": "Root-5 Minor 7", "base_root": "A", "frets": ["x", 0, 2, 0, 1, 0], "span": 2},
-    ],
-    "maj7": [
-        {"name": "Root-6 Major 7", "base_root": "E", "frets": [0, "x", 1, 1, 0, "x"], "span": 2},
-        {"name": "Root-5 Major 7", "base_root": "A", "frets": ["x", 0, 2, 1, 2, 0], "span": 2},
-    ]
-}
+    <div class="form-group">
+        <label for="chords">Chord Progression</label>
+        <input type="text" id="chords" value="D - G - Em - A">
+    </div>
 
-NOTE_TO_SEMITONE = {
-    "C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
-    "E": 4, "F": 5, "F#": 6, "Gb": 6, "G": 7, "G#": 8,
-    "Ab": 8, "A": 9, "A#": 10, "Bb": 10, "B": 11
-}
+    <div class="form-group">
+        <label for="tuning">Tuning</label>
+        <select id="tuning">
+            <option value="Standard (EADGBE)">Standard (EADGBE)</option>
+            <option value="Drop D (DADGBE)" selected>Drop D (DADGBE)</option>
+            <option value="Open G (DGDGBD)">Open G (DGDGBD)</option>
+            <option value="DADGAD">DADGAD</option>
+            <option value="Double Drop D (DADGBD)">Double Drop D (DADGBD)</option>
+        </select>
+    </div>
 
-@app.route('/')
-def home():
-    return "FretFlow Backend is active and running!"
+    <div class="form-group">
+        <label for="capo">Capo Position</label>
+        <select id="capo">
+            <option value="None">No Capo</option>
+            <option value="1st Fret">1st Fret</option>
+            <option value="2nd Fret">2nd Fret</option>
+            <option value="3rd Fret" selected>3rd Fret</option>
+            <option value="4th Fret">4th Fret</option>
+            <option value="5th Fret">5th Fret</option>
+        </select>
+    </div>
 
-@app.route('/generate', methods=['POST'])
-def generate_arrangement():
-    data = request.get_json() or {}
-    raw_progression = data.get("chords", data.get("progression", "D - G - Em - A"))
-    
-    progression = []
-    if isinstance(raw_progression, str):
-        chords = [c.strip() for c in raw_progression.replace("-", " ").split() if c.strip()]
-        for chord in chords:
-            root = chord[0].upper()
-            if len(chord) > 1 and chord[1] in ["#", "b"]:
-                root = chord[:2]
-                quality_str = chord[2:].lower()
-            else:
-                quality_str = chord[1:].lower()
-            
-            if quality_str in ["m", "min"]:
-                quality = "min"
-            elif quality_str in ["7"]:
-                quality = "7"
-            elif quality_str in ["m7", "min7"]:
-                quality = "m7"
-            elif quality_str in ["maj7"]:
-                quality = "maj7"
-            else:
-                quality = "maj"
-            progression.append({"root": root, "quality": quality})
-    else:
-        progression = raw_progression
-        
-    response_data = []
-    for item in progression:
-        root = item.get("root").capitalize()
-        quality = item.get("quality", "maj").lower()
-        templates = CHORD_TEMPLATES.get(quality, CHORD_TEMPLATES["maj"])
-        
-        chord_variations = []
-        for t in templates:
-            base_root = t["base_root"]
-            # Calculate the exact semitone shift from the template base root to the target chord root
-            shift = (NOTE_TO_SEMITONE.get(root, 0) - NOTE_TO_SEMITONE.get(base_root, 0)) % 12
-            
-            shifted_frets = []
-            for f in t["frets"]:
-                if f == "x":
-                    shifted_frets.append("x")
-                else:
-                    # Shift the base shape cleanly without wrapping individual notes
-                    shifted_frets.append(f + shift)
-                    
-            chord_variations.append({
-                "name": t["name"],
-                "frets": shifted_frets,
-                "span": t["span"]
-            })
-            
-        response_data.append({
-            "chord": f"{root}{quality if quality != 'maj' else ''}",
-            "root": root,
-            "quality": quality,
-            "variations": chord_variations
-        })
+    <div class="form-group">
+        <label for="style">Picking Style</label>
+        <select id="style">
+            <option value="Travis Fingerpicking" selected>Travis Fingerpicking</option>
+            <option value="Mellow 6/8 Arpeggio">Mellow 6/8 Arpeggio</option>
+            <option value="Up-the-Neck Movable Triads">Up-the-Neck Movable Triads</option>
+            <option value="Acoustic Strum & Fill">Acoustic Strum & Fill</option>
+        </select>
+    </div>
 
-    return jsonify({
-        "progression": response_data
-    })
+    <button onclick="generateArrangement()">Generate Arrangement</button>
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    <div id="results">Your custom tab and up-the-neck voicings will appear here...</div>
+
+    <script>
+        async function generateArrangement() {
+            const chords = document.getElementById('chords').value;
+            const tuning = document.getElementById('tuning').value;
+            const capo = document.getElementById('capo').value;
+            const style = document.getElementById('style').value;
+            const resultsDiv = document.getElementById('results');
+
+            if (!chords) {
+                alert('Please enter a chord progression!');
+                return;
+            }
+
+            resultsDiv.innerText = "Generating custom arrangement...";
+
+            const railwayUrl = 'https://web-production-37f6f1.up.railway.app/generate';
+
+            try {
+                const response = await fetch(railwayUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chords, tuning, capo, style })
+                });
+
+                const data = await response.json();
+
+                if (data.result) {
+                    resultsDiv.innerText = data.result;
+                } else if (data.error) {
+                    resultsDiv.innerText = "Error: " + data.error;
+                } else {
+                    resultsDiv.innerText = "Unexpected response from server.";
+                }
+            } catch (err) {
+                resultsDiv.innerText = "Connection error. Please check your network.";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -85,7 +85,7 @@
                 return;
             }
 
-            resultsDiv.innerText = "Connecting to Claude API and generating custom arrangement...";
+            resultsDiv.innerText = "Connecting to Claude API via proxy and generating custom arrangement...";
 
             const prompt = `You are an expert guitar master and teacher specializing in fingerpicking, open tunings, and up-the-neck voice leading.
             
@@ -101,14 +101,18 @@ Please provide:
 3. **Custom Picking Tab:** Write out a clean ASCII guitar tab for a 1-to-2 bar picking pattern for this progression in the requested style.
 4. **Playing Tip:** Give 1 specific tip on hand position or string transition for this arrangement.`;
 
+            // Using a corsproxy to handle browser-to-API communication smoothly
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+            const targetUrl = 'https://api.anthropic.com/v1/messages';
+
             try {
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
                     method: 'POST',
                     headers: {
                         'x-api-key': apiKey,
                         'anthropic-version': '2023-06-01',
                         'content-type': 'application/json',
-                        'dangerously-allow-browser-api-key': 'true'
+                        'anthropic-dangerous-direct-browser-access': 'true'
                     },
                     body: JSON.stringify({
                         model: 'claude-3-5-sonnet-20241022',
@@ -121,7 +125,7 @@ Please provide:
                 if (data.content && data.content[0]) {
                     resultsDiv.innerText = data.content[0].text;
                 } else {
-                    resultsDiv.innerText = "Error from API:\n" + JSON.stringify(data, null, 2);
+                    resultsDiv.innerText = "Response from API:\n" + JSON.stringify(data, null, 2);
                 }
             } catch (err) {
                 resultsDiv.innerText = "Connection Error:\n" + err.message;

@@ -21,14 +21,14 @@
 
     <div class="form-group">
         <label for="chords">Chord Progression</label>
-        <input type="text" id="chords" placeholder="e.g. D - G - Em - A or C - G - D - A">
+        <input type="text" id="chords" placeholder="e.g. D - G - Em - A or C - G - D - A" value="D - G - Em - A">
     </div>
 
     <div class="form-group">
         <label for="tuning">Tuning</label>
         <select id="tuning">
             <option value="Standard (EADGBE)">Standard (EADGBE)</option>
-            <option value="Drop D (DADGBE)">Drop D (DADGBE)</option>
+            <option value="Drop D (DADGBE)" selected>Drop D (DADGBE)</option>
             <option value="Open G (DGDGBD)">Open G (DGDGBD) - 'Keith Richards'</option>
             <option value="DADGAD">DADGAD</option>
             <option value="Double Drop D (DADGBD)">Double Drop D (DADGBD)</option>
@@ -53,14 +53,9 @@
         <select id="style">
             <option value="Travis Fingerpicking">Travis Fingerpicking</option>
             <option value="Mellow 6/8 Arpeggio">Mellow 6/8 Arpeggio</option>
-            <option value="Up-the-Neck Movable Triads">Up-the-Neck Movable Triads / Voice Leading</option>
+            <option value="Up-the-Neck Movable Triads" selected>Up-the-Neck Movable Triads / Voice Leading</option>
             <option value="Acoustic Strum & Fill">Acoustic Strum & Fill</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <label for="apiKey">OpenRouter / API Key</label>
-        <input type="password" id="apiKey" placeholder="sk-or-v1-...">
     </div>
 
     <button onclick="generateArrangement()">Generate Arrangement</button>
@@ -69,59 +64,41 @@
 
     <script>
         async function generateArrangement() {
-            const apiKey = document.getElementById('apiKey').value.trim();
             const chords = document.getElementById('chords').value;
             const tuning = document.getElementById('tuning').value;
             const capo = document.getElementById('capo').value;
             const style = document.getElementById('style').value;
             const resultsDiv = document.getElementById('results');
 
-            if (!apiKey) {
-                alert('Please enter your API Key!');
-                return;
-            }
             if (!chords) {
                 alert('Please enter a chord progression!');
                 return;
             }
 
-            resultsDiv.innerText = "Connecting to Claude 3.5 Sonnet...";
+            resultsDiv.innerText = "Connecting to FretFlow Railway server and generating arrangement...";
 
-            const prompt = `You are an expert guitar master and teacher specializing in fingerpicking, open tunings, and up-the-neck voice leading.
-            
-User Request:
-- Chord Progression: ${chords}
-- Tuning: ${tuning}
-- Capo Position: ${capo}
-- Desired Style: ${style}
-
-Please provide:
-1. **Up-the-Neck Voicings:** Instead of basic 1st-fret open chords, give 2-3 logical, comfortable movable chord shapes higher up the fretboard that flow naturally into each other (smooth voice leading).
-2. **Fret Diagrams:** Express these voicings clearly using tab/fret numbers relative to the capo/tuning.
-3. **Custom Picking Tab:** Write out a clean ASCII guitar tab for a 1-to-2 bar picking pattern for this progression in the requested style.
-4. **Playing Tip:** Give 1 specific tip on hand position or string transition for this arrangement.`;
+            const railwayUrl = 'https://web-production-37f6f1.up.railway.app/generate';
 
             try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                const response = await fetch(railwayUrl, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json',
-                        'HTTP-Referer': window.location.origin,
-                        'X-Title': 'FretFlow'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'anthropic/claude-3.5-sonnet',
-                        messages: [{ role: 'user', content: prompt }]
+                        chords: chords,
+                        tuning: tuning,
+                        capo: capo,
+                        style: style
                     })
                 });
 
                 const data = await response.json();
 
-                if (data.choices && data.choices[0]) {
-                    resultsDiv.innerText = data.choices[0].message.content;
+                if (data.result) {
+                    resultsDiv.innerText = data.result;
                 } else if (data.error) {
-                    resultsDiv.innerText = "API Error:\n" + data.error.message;
+                    resultsDiv.innerText = "Server Error:\n" + data.error;
                 } else {
                     resultsDiv.innerText = "Unexpected Response:\n" + JSON.stringify(data, null, 2);
                 }
